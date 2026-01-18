@@ -3,340 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة منازل العليين - لحلقات التحفيظ</title>
+    <title>منصة منازل العليين - الرسوم البيانية</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary: #0A5C36; /* الأخضر الداكن */
-            --gold: #D4AF37;    /* الذهبي */
-            --white: #FFFFFF;
-            --cream: #F8F5E6;   /* الكريمي */
-            --transition: all 0.4s ease;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--cream); color: #333; overflow-x: hidden; }
-
-        /* --- 1. الشاشة الترحيبية والهيدر --- */
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, #053d23 100%);
-            color: var(--white);
-            padding: 1rem;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(10, 92, 54, 0.4);
-            border-bottom: 4px solid var(--gold);
-        }
-        
-        /* الشعار المتحرك (كتاب يتحول لمسجد) */
-        .logo-container {
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            perspective: 1000px;
-        }
-        .icon-morph {
-            font-size: 4rem;
-            color: var(--gold);
-            animation: morphIcon 6s infinite ease-in-out;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
-        }
-        @keyframes morphIcon {
-            0%, 45% { content: "\f02d"; font-family: "Font Awesome 6 Free"; font-weight: 900; transform: rotateY(0deg); } /* كتاب */
-            50%, 95% { content: "\f66f"; font-family: "Font Awesome 6 Free"; font-weight: 900; transform: rotateY(360deg); } /* مسجد */
-            100% { content: "\f02d"; font-family: "Font Awesome 6 Free"; font-weight: 900; transform: rotateY(0deg); }
-        }
-
-        .hero-text h1 { font-family: 'Amiri', serif; font-size: 2.5rem; margin-bottom: 10px; color: var(--gold); }
-        .hero-text p { font-size: 1.1rem; opacity: 0.9; }
-
-        /* --- 2. الإحصائيات الحية --- */
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            background: var(--white);
-            margin: -30px 20px 20px 20px;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            position: relative;
-            z-index: 10;
-        }
-        .stat-item { text-align: center; }
-        .stat-num { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.9rem; color: #777; }
-
-        /* --- 3. أزرار الدخول (البوابات) --- */
-        .portals {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .portal-card {
-            background: var(--white);
-            border: 2px solid transparent;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        .portal-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 15px 40px rgba(10, 92, 54, 0.15); }
-        .portal-icon { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
-        .portal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
-        .portal-desc { font-size: 0.9rem; color: #666; }
-
-        /* --- الأقسام المخفية (لوحات التحكم) --- */
-        .dashboard-section { display: none; padding: 20px; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .btn-back { background: transparent; border: 2px solid var(--primary); padding: 5px 15px; border-radius: 20px; cursor: pointer; color: var(--primary); margin-bottom: 20px; }
-
-        /* تصميم واجهة الطالب (الشجرة) */
-        .tree-container { text-align: center; position: relative; padding: 40px 0; }
-        .tree-path { width: 4px; background: var(--gold); height: 100%; position: absolute; left: 50%; transform: translateX(-50%); z-index: 0; }
-        .achievement-node {
-            background: var(--white); width: 60px; height: 60px; border-radius: 50%;
-            border: 4px solid var(--gold); margin: 20px auto; position: relative; z-index: 1;
-            display: flex; align-items: center; justify-content: center; font-weight: bold;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-            transition: 0.3s;
-        }
-        .achievement-node.locked { border-color: #ccc; background: #eee; color: #999; box-shadow: none; }
-        .achievement-node:hover { transform: scale(1.2); background: var(--gold); color: white; }
-
-        /* تصميم واجهة المعلم (الخريطة الحرارية) */
-        .heatmap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-        .heatmap-cell { padding: 15px; border-radius: 8px; text-align: center; color: white; font-weight: bold; }
-        .level-high { background-color: #2ecc71; }
-        .level-mid { background-color: #f1c40f; }
-        .level-low { background-color: #e74c3c; }
-
-        /* تصميم البطاقات العامة */
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .card h3 { color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid var(--cream); padding-bottom: 10px; }
-
-        /* زر الواتساب العائم */
-        .whatsapp-float {
-            position: fixed; bottom: 20px; left: 20px;
-            background: #25D366; color: white;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; box-shadow: 0 5px 20px rgba(37, 211, 102, 0.4);
-            cursor: pointer; z-index: 100;
-        }
-
+        :root { --primary: #0A5C36; --gold: #D4AF37; --cream: #F8F5E6; --white: #FFFFFF; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--cream); margin: 0; }
+        header { background: var(--primary); color: var(--gold); padding: 20px; text-align: center; border-bottom: 5px solid var(--gold); }
+        .container { max-width: 1000px; margin: 30px auto; padding: 20px; }
+        .chart-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .hero-title { font-family: 'Amiri', serif; font-size: 2.5rem; margin-bottom: 10px; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-right: 5px solid var(--gold); }
+        .btn-update { background: var(--gold); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
     </style>
 </head>
 <body>
 
-    <header id="main-header">
-        <div class="logo-container">
-            <i class="icon-morph fa-solid fa-book-open"></i>
-        </div>
-        <div style="text-align: center;" class="hero-text">
-            <h1>منصة منازل العليين</h1>
-            <p>لحلقات تحفيظ القرآن الكريم | إرث يبقى</p>
-        </div>
-    </header>
+<header>
+    <div class="hero-title">منصة منازل العليين</div>
+    <p style="color: white;">لوحة التنافس والتميز - حلقة عاصم بن عمر</p>
+</header>
 
-    <div id="landing-page">
-        <div class="stats-bar">
-            <div class="stat-item">
-                <span class="stat-num counter" data-target="150">0</span>
-                <span class="stat-label">طالب وطالبة</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-num counter" data-target="850">0</span>
-                <span class="stat-label">صفحة محفوظة</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-num counter" data-target="8">0</span>
-                <span class="stat-label">حلقات نشطة</span>
-            </div>
-        </div>
-
-        <div class="portals">
-            <div class="portal-card" onclick="showDashboard('teacher')">
-                <i class="portal-icon fa-solid fa-chalkboard-user"></i>
-                <div class="portal-title">المعلم / المشرف</div>
-                <div class="portal-desc">إدارة الحلقات، الخريطة الحرارية، سجلات الطلاب</div>
-            </div>
-
-            <div class="portal-card" onclick="showDashboard('parent')">
-                <i class="portal-icon fa-solid fa-user-tie"></i>
-                <div class="portal-title">ولي الأمر</div>
-                <div class="portal-desc">متابعة الأبناء، التقارير البيانية، التواصل المباشر</div>
-            </div>
-
-            <div class="portal-card" onclick="showDashboard('student')">
-                <i class="portal-icon fa-solid fa-graduation-cap"></i>
-                <div class="portal-title">الطالب</div>
-                <div class="portal-desc">شجرة الإنجاز، النقاط والهدايا، المنافسة</div>
-            </div>
-        </div>
-
-        <div class="card" style="max-width: 800px; margin: 20px auto; text-align: center;">
-            <h3>عن المنصة</h3>
-            <div style="background: #000; height: 200px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;">
-                <i class="fa-solid fa-play-circle" style="font-size: 3rem; cursor: pointer;"></i>
-            </div>
-            <p style="margin-top: 10px;">فيديو تعريفي قصير (60 ثانية) عن آلية عمل المنصة</p>
-        </div>
+<div class="container">
+    <div class="chart-container">
+        <h3 style="color: var(--primary); margin-bottom: 20px; text-align: center;">📊 مؤشر عدد الصفحات المحفوظة (هذا الأسبوع)</h3>
+        <canvas id="studentsChart"></canvas>
     </div>
 
-    <div id="teacher-dash" class="dashboard-section">
-        <button class="btn-back" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i> عودة</button>
-        <h2 style="color: var(--primary); margin-bottom: 20px;">👨‍🏫 لوحة المشرف العام</h2>
-        
-        <div class="card">
-            <h3>🔥 الخريطة الحرارية للحلقات</h3>
-            <div class="heatmap-grid">
-                <div class="heatmap-cell level-high">عاصم بن عمر<br>98%</div>
-                <div class="heatmap-cell level-mid">أبو بكر الصديق<br>75%</div>
-                <div class="heatmap-cell level-high">عثمان بن عفان<br>92%</div>
-                <div class="heatmap-cell level-low">علي بن أبي طالب<br>60%</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>📝 إضافة طالب جديد</h3>
-            <input type="text" placeholder="اسم الطالب" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px;">
-            <select style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                <option>اختر الحلقة</option>
-                <option>حلقة المتميزين</option>
-                <option>حلقة البراعم</option>
-            </select>
-            <button style="background: var(--gold); color: white; border: none; padding: 10px 20px; border-radius: 5px; width: 100%;">إضافة للسجل</button>
-        </div>
+    <div class="card">
+        <h3>💡 فكرة الرسم البياني:</h3>
+        <p>كل عمود يمثل طالب، وارتفاع العمود يوضح كم صفحة حفظ. العمود الذهبي هو الطالب "علي" المتصدر دائماً!</p>
     </div>
 
-    <div id="parent-dash" class="dashboard-section">
-        <button class="btn-back" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i> عودة</button>
-        <h2 style="color: var(--primary); margin-bottom: 20px;">👨‍👦 واجهة ولي الأمر</h2>
-
-        <div class="card" style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 60px; height: 60px; background: #ddd; border-radius: 50%; overflow: hidden;">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Student" style="width: 100%;">
-            </div>
-            <div>
-                <h3 style="border: none; margin: 0;">الابن: محمد علي</h3>
-                <span style="background: var(--gold); color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.8rem;">اللقب: حامل القرآن 🏆</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>📊 رسم بياني للإنجاز</h3>
-            <canvas id="myChart"></canvas>
-        </div>
-
-        <div class="card">
-            <h3>🔔 آخر الإشعارات</h3>
-            <div style="background: #e8f5e9; padding: 10px; border-radius: 8px; margin-bottom: 5px; border-right: 4px solid var(--primary);">
-                <strong>تسميع جديد:</strong> سورة البقرة (وجه 4-5) - تقييم ممتاز ⭐
-            </div>
-            <div style="background: #fff3e0; padding: 10px; border-radius: 8px; border-right: 4px solid var(--gold);">
-                <strong>تنبيه:</strong> موعد اختبار الجزء الأول يوم الخميس.
-            </div>
-        </div>
+    <div class="card">
+        <h3>📋 قائمة الشرف اليومية</h3>
+        <ul id="studentList" style="list-style: none; padding: 0;">
+            </ul>
     </div>
+</div>
 
-    <div id="student-dash" class="dashboard-section">
-        <button class="btn-back" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i> عودة</button>
-        <div style="text-align: center;">
-            <h2 style="color: var(--primary);">🌟 رحلتي القرآنية</h2>
-            <p>نقاطك الحالية: <span style="color: var(--gold); font-weight: bold; font-size: 1.5rem;">450</span> نقطة</p>
-        </div>
+<script>
+    // بيانات الطلاب (تقدر تعدل الأرقام من هنا يا علي)
+    const studentsData = {
+        labels: ['علي (أنت)', 'محمد', 'عبدالله', 'سعد', 'ياسر', 'فهد'],
+        pages: [45, 38, 30, 25, 20, 15] // عدد الصفحات
+    };
 
-        <div class="tree-container">
-            <div class="tree-path"></div>
-            <div class="achievement-node" title="تم الحفظ">ج 30</div>
-            <div class="achievement-node" title="تم الحفظ">ج 29</div>
-            <div class="achievement-node" title="جاري الحفظ" style="background: var(--white); border-color: var(--primary);">ج 28</div>
-            <div class="achievement-node locked">ج 27</div>
-            <div class="achievement-node locked">ج 26</div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-            <h3>🎁 متجر الهدايا</h3>
-            <p>اجمع 500 نقطة لتحصل على "مصحف باسمك"</p>
-            <div style="height: 10px; background: #eee; border-radius: 5px; margin-top: 10px; overflow: hidden;">
-                <div style="width: 90%; height: 100%; background: var(--gold);"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="whatsapp-float">
-        <i class="fa-brands fa-whatsapp"></i>
-    </div>
-
-    <script>
-        // دالة التنقل بين الصفحات
-        function showDashboard(type) {
-            document.getElementById('landing-page').style.display = 'none';
-            document.getElementById('main-header').style.display = 'none';
-            
-            // إخفاء الكل أولاً
-            document.querySelectorAll('.dashboard-section').forEach(d => d.style.display = 'none');
-
-            // إظهار المطلوب
-            if(type === 'teacher') document.getElementById('teacher-dash').style.display = 'block';
-            if(type === 'parent') {
-                document.getElementById('parent-dash').style.display = 'block';
-                loadChart(); // تحميل الرسم البياني
+    // إعداد الرسم البياني
+    const ctx = document.getElementById('studentsChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'bar', // نوع الأعمدة كما طلبت في الرسم
+        data: {
+            labels: studentsData.labels,
+            datasets: [{
+                label: 'عدد الصفحات المحفوظة',
+                data: studentsData.pages,
+                backgroundColor: [
+                    '#D4AF37', // لون ذهبي لك يا علي
+                    '#0A5C36', '#0A5C36', '#0A5C36', '#0A5C36', '#0A5C36'
+                ],
+                borderRadius: 10,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false }
             }
-            if(type === 'student') document.getElementById('student-dash').style.display = 'block';
         }
+    });
 
-        function goHome() {
-            document.querySelectorAll('.dashboard-section').forEach(d => d.style.display = 'none');
-            document.getElementById('landing-page').style.display = 'block';
-            document.getElementById('main-header').style.display = 'block';
-        }
+    // ملء قائمة الشرف
+    const list = document.getElementById('studentList');
+    studentsData.labels.forEach((name, index) => {
+        const li = document.createElement('li');
+        li.style.padding = "10px";
+        li.style.borderBottom = "1px solid #eee";
+        li.innerHTML = `<strong>${name}</strong>: حفظ ${studentsData.pages[index]} صفحة ✨`;
+        list.appendChild(li);
+    });
+</script>
 
-        // عداد الأرقام المتحرك
-        const counters = document.querySelectorAll('.counter');
-        counters.forEach(counter => {
-            counter.innerText = '0';
-            const updateCounter = () => {
-                const target = +counter.getAttribute('data-target');
-                const c = +counter.innerText;
-                const increment = target / 200;
-                if(c < target) {
-                    counter.innerText = `${Math.ceil(c + increment)}`;
-                    setTimeout(updateCounter, 10);
-                } else {
-                    counter.innerText = target;
-                }
-            };
-            updateCounter();
-        });
-
-        // رسم بياني بسيط لولي الأمر باستخدام Chart.js
-        function loadChart() {
-            const ctx = document.getElementById('myChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['محفوظ', 'مراجعة', 'متبقي'],
-                    datasets: [{
-                        data: [15, 5, 10],
-                        backgroundColor: ['#0A5C36', '#D4AF37', '#eee'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true }
-            });
-        }
-    </script>
 </body>
 </html>
 
