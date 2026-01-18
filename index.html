@@ -3,91 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة منازل العليين - الرسوم البيانية</title>
+    <title>منصة منازل العليين - النسخة الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #0A5C36; --gold: #D4AF37; --cream: #F8F5E6; --white: #FFFFFF; }
         body { font-family: 'Tajawal', sans-serif; background-color: var(--cream); margin: 0; }
-        header { background: var(--primary); color: var(--gold); padding: 20px; text-align: center; border-bottom: 5px solid var(--gold); }
-        .container { max-width: 1000px; margin: 30px auto; padding: 20px; }
-        .chart-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .hero-title { font-family: 'Amiri', serif; font-size: 2.5rem; margin-bottom: 10px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-right: 5px solid var(--gold); }
-        .btn-update { background: var(--gold); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+        header { background: var(--primary); color: var(--gold); padding: 25px; text-align: center; border-bottom: 5px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .container { max-width: 900px; margin: 20px auto; padding: 15px; }
+        .dashboard-section { display: none; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: scale(1.02); }
+        .btn-back { background: var(--primary); color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
+        .chart-container { background: white; padding: 20px; border-radius: 15px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="hero-title">منصة منازل العليين</div>
-    <p style="color: white;">لوحة التنافس والتميز - حلقة عاصم بن عمر</p>
+<header id="mainHeader">
+    <h1 style="font-family: 'Amiri', serif; font-size: 2.5rem; margin: 0;">منصة منازل العليين</h1>
+    <p style="color: white; margin-top: 5px;">إشراف: علي - حلقة عاصم بن عمر</p>
 </header>
 
 <div class="container">
-    <div class="chart-container">
-        <h3 style="color: var(--primary); margin-bottom: 20px; text-align: center;">📊 مؤشر عدد الصفحات المحفوظة (هذا الأسبوع)</h3>
-        <canvas id="studentsChart"></canvas>
-    </div>
+    <div id="homePage">
+        <div class="card" onclick="showSection('chartSection')">
+            <i class="fa-solid fa-chart-bar" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h3>لوحة التنافس (الرسم البياني)</h3>
+            <p>شاهد مستوى الحفظ والمنافسة بين الطلاب</p>
+        </div>
+        </div>
 
-    <div class="card">
-        <h3>💡 فكرة الرسم البياني:</h3>
-        <p>كل عمود يمثل طالب، وارتفاع العمود يوضح كم صفحة حفظ. العمود الذهبي هو الطالب "علي" المتصدر دائماً!</p>
-    </div>
-
-    <div class="card">
-        <h3>📋 قائمة الشرف اليومية</h3>
-        <ul id="studentList" style="list-style: none; padding: 0;">
-            </ul>
+    <div id="chartSection" class="dashboard-section">
+        <button class="btn-back" onclick="goHome()"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</button>
+        <div class="chart-container">
+            <h3 style="color: var(--primary); margin-bottom: 20px;">📊 عدد الصفحات المحفوظة</h3>
+            <canvas id="studentsChart"></canvas>
+        </div>
+        <div class="card" style="margin-top: 20px; cursor: default;">
+            <p><strong>تنبيه:</strong> الرسم يظهر تقدم الطلاب بشكل أسبوعي ✨</p>
+        </div>
     </div>
 </div>
 
 <script>
-    // بيانات الطلاب (تقدر تعدل الأرقام من هنا يا علي)
-    const studentsData = {
-        labels: ['علي (أنت)', 'محمد', 'عبدالله', 'سعد', 'ياسر', 'فهد'],
-        pages: [45, 38, 30, 25, 20, 15] // عدد الصفحات
-    };
+    // وظيفة التنقل بين الواجهات بداخل الموقع
+    function showSection(sectionId) {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById(sectionId).style.display = 'block';
+        if(sectionId === 'chartSection') { loadChart(); }
+    }
 
-    // إعداد الرسم البياني
-    const ctx = document.getElementById('studentsChart').getContext('2d');
-    const myChart = new Chart(ctx, {
-        type: 'bar', // نوع الأعمدة كما طلبت في الرسم
-        data: {
-            labels: studentsData.labels,
-            datasets: [{
-                label: 'عدد الصفحات المحفوظة',
-                data: studentsData.pages,
-                backgroundColor: [
-                    '#D4AF37', // لون ذهبي لك يا علي
-                    '#0A5C36', '#0A5C36', '#0A5C36', '#0A5C36', '#0A5C36'
-                ],
-                borderRadius: 10,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true, grid: { display: false } },
-                x: { grid: { display: false } }
+    function goHome() {
+        document.getElementById('chartSection').style.display = 'none';
+        document.getElementById('homePage').style.display = 'block';
+    }
+
+    // وظيفة الرسم البياني
+    function loadChart() {
+        const ctx = document.getElementById('studentsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['علي (المتصدر)', 'محمد', 'سعد', 'ياسر'],
+                datasets: [{
+                    label: 'عدد الصفحات',
+                    data: [50, 42, 35, 28],
+                    backgroundColor: ['#D4AF37', '#0A5C36', '#0A5C36', '#0A5C36'],
+                    borderRadius: 8
+                }]
             },
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-
-    // ملء قائمة الشرف
-    const list = document.getElementById('studentList');
-    studentsData.labels.forEach((name, index) => {
-        const li = document.createElement('li');
-        li.style.padding = "10px";
-        li.style.borderBottom = "1px solid #eee";
-        li.innerHTML = `<strong>${name}</strong>: حفظ ${studentsData.pages[index]} صفحة ✨`;
-        list.appendChild(li);
-    });
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    }
 </script>
 
 </body>
