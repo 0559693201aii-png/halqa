@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام متابعة الحلقة القرآنية</title>
+    <style>
+        :root {
+            --primary-color: #145A32; /* أخضر إسلامي */
+            --secondary-color: #D4AC0D; /* ذهبي */
+            --bg-color: #Fdfefe;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Amiri', 'Segoe UI', Tahoma, serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#e8f5e9 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #ddd;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* أدوات البحث */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* جدول الطلاب */
+        .student-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-right: 4px solid var(--secondary-color);
+        }
+
+        .info h3 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+        }
+
+        .details {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .details span {
+            display: inline-block;
+            margin-left: 10px;
+            background: #f8f9fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .grade-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .grade-mumtaz { background-color: #27ae60; }
+        .grade-jayyid { background-color: #f39c12; }
+        .grade-daeef { background-color: #c0392b; }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>📿 حلقة النور القرآنية</h1>
+            <div class="subtitle">نظام متابعة الحفظ والمراجعة</div>
+        </header>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="ابحث عن اسم الطالب..." onkeyup="filterStudents()">
+        </div>
+
+        <div id="students-list">
+            </div>
+        
+        <div id="empty-msg" class="empty-state">
+            لا يوجد طالب بهذا الاسم
+        </div>
+    </div>
+
+    <script>
+        // هنا بيانات طلاب الحلقة - عدلها براحتك يا معلم علي
+        const students = [
+            { 
+                id: 1, 
+                name: "عبدالرحمن خالد", 
+                currentSurah: "سورة البقرة", 
+                ayahs: "142 - 150", 
+                type: "حفظ جديد",
+                grade: "ممتاز" 
+            },
+            { 
+                id: 2, 
+                name: "عمر بن عبدالعزيز", 
+                currentSurah: "سورة آل عمران", 
+                ayahs: "كامل السورة", 
+                type: "مراجعة",
+                grade: "جيد جداً" 
+            },
+            { 
+                id: 3, 
+                name: "حمزة بن عبدالمطلب", 
+                currentSurah: "سورة النساء", 
+                ayahs: "1 - 15", 
+                type: "حفظ جديد",
+                grade: "ممتاز" 
+            },
+            { 
+                id: 4, 
+                name: "زيد بن ثابت", 
+                currentSurah: "جزء عم", 
+                ayahs: "سورة النبأ", 
+                type: "تسميع",
+                grade: "ممتاز" 
+            },
+            { 
+                id: 5, 
+                name: "سعيد بن معاذ", 
+                currentSurah: "سورة الكهف", 
+                ayahs: "1 - 10", 
+                type: "تلاوة",
+                grade: "جيد" 
+            }
+        ];
+
+        function renderStudents(list) {
+            const container = document.getElementById('students-list');
+            const emptyMsg = document.getElementById('empty-msg');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            } else {
+                emptyMsg.style.display = 'none';
+            }
+
+            list.forEach(student => {
+                let gradeClass = 'grade-mumtaz';
+                if (student.grade.includes('جيد')) gradeClass = 'grade-jayyid';
+                if (student.grade.includes('ضعيف')) gradeClass = 'grade-daeef';
+
+                const card = `
+                    <div class="student-card">
+                        <div class="info">
+                            <h3>${student.name}</h3>
+                            <div class="details">
+                                <span>📖 ${student.currentSurah}</span>
+                                <span>🔢 الآيات: ${student.ayahs}</span>
+                                <span>📌 ${student.type}</span>
+                            </div>
+                        </div>
+                        <div class="grade-badge ${gradeClass}">
+                            ${student.grade}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function filterStudents() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = students.filter(s => s.name.includes(query));
+            renderStudents(filtered);
+        }
+
+        // تشغيل الدالة عند فتح الموقع
+        renderStudents(students);
+    </script>
+</body>
+</html>
